@@ -1,0 +1,8 @@
+- name: Générer le fichier de configuration prometheus.yml
+  template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+  notify: Restart Prometheus

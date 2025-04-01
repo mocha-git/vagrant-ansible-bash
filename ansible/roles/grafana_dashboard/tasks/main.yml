@@ -1,0 +1,48 @@
+- name: Attente que Grafana soit disponible
+  wait_for:
+    host: localhost
+    port: 3000
+    timeout: 30
+    state: started
+
+- name: Créer le dossier "DevOps" dans Grafana
+  uri:
+    url: http://localhost:3000/api/folders
+    method: POST
+    user: admin
+    password: admin
+    force_basic_auth: yes
+    headers:
+      Content-Type: "application/json"
+    body: |
+      {
+        "uid": "devops-folder",
+        "title": "DevOps"
+      }
+    body_format: json
+    status_code: 200,409
+
+- name: Importer le dashboard Prometheus Node Exporter
+  uri:
+    url: http://localhost:3000/api/dashboards/db
+    method: POST
+    user: admin
+    password: admin
+    force_basic_auth: yes
+    headers:
+      Content-Type: "application/json"
+    body: "{{ lookup('template', 'node_exporter_dashboard.json.j2') }}"
+    body_format: json
+    status_code: 200,412
+
+- name: Import du dashboard Node Exporter via API
+  uri:
+    url: http://localhost:3000/api/dashboards/db
+    method: POST
+    user: admin
+    password: admin
+    body: "{{ lookup('file', 'files/node_exporter_dashboard.json') | from_json | to_json }}"
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+    status_code: 200

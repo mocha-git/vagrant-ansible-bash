@@ -1,0 +1,22 @@
+- name: Configuration du serveur web
+  hosts: web
+  become: true
+  roles:
+    - web
+    - nginx
+    - node_exporter
+
+- name: Configuration du serveur base de données
+  hosts: db
+  become: true
+  roles:
+    - db
+    - node_exporter
+
+- name: Configuration de la jumpbox
+  hosts: jumpbox
+  become: true
+  roles:
+    - prometheus_config
+    - grafana_datasource
+    - grafana_dashboard

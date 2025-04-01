@@ -1,0 +1,31 @@
+---
+- name: Installer PostgreSQL
+  apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+    state: present
+    update_cache: yes
+
+- name: S'assurer que PostgreSQL est démarré
+  service:
+    name: postgresql
+    state: started
+    enabled: true
+
+- name: Créer un script SQL pour l'utilisateur 'dev_user'
+  copy:
+    dest: /tmp/create_dev_user.sql
+    content: |
+      DO
+      $$
+      BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'dev_user') THEN
+          CREATE ROLE dev_user LOGIN CREATEDB PASSWORD 'devpass';
+        END IF;
+      END
+      $$;
+
+- name: Exécuter le script SQL via sudo -u postgres
+  become: true
+  shell: sudo -u postgres psql -f /tmp/create_dev_user.sql

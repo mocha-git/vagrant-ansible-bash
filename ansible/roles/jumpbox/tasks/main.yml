@@ -1,0 +1,25 @@
+---
+- name: Install UFW and fail2ban
+  apt:
+    name:
+      - ufw
+      - fail2ban
+    state: present
+    update_cache: yes
+
+- name: Allow SSH
+  ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: deny
+
+- name: Start and enable fail2ban
+  service:
+    name: fail2ban
+    state: started
+    enabled: true
+

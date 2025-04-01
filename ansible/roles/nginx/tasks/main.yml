@@ -1,0 +1,42 @@
+---
+- name: Installer Nginx et OpenSSL
+  apt:
+    name:
+      - nginx
+      - openssl
+    state: present
+    update_cache: yes
+
+- name: Créer un certificat SSL auto-signé
+  command: >
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048
+    -keyout /etc/ssl/private/nginx-selfsigned.key
+    -out /etc/ssl/certs/nginx-selfsigned.crt
+    -subj "/C=FR/ST=IDF/L=Paris/O=TestOrg/OU=IT/CN=web01"
+
+  args:
+    creates: /etc/ssl/certs/nginx-selfsigned.crt
+
+- name: Configurer Nginx en reverse proxy vers Apache
+  copy:
+    dest: /etc/nginx/sites-available/default
+    content: |
+      server {
+          listen 443 ssl;
+          server_name localhost;
+
+          ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+          ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+
+          location / {
+              proxy_pass http://localhost:80;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+          }
+      }
+
+- name: Redémarrer Nginx
+  service:
+    name: nginx
+    state: restarted
+    enabled: true

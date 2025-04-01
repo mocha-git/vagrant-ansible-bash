@@ -1,0 +1,20 @@
+---
+- name: Installer Apache
+  apt:
+    name: apache2
+    state: present
+    update_cache: yes
+
+- name: Démarrer Apache
+  service:
+    name: apache2
+    state: started
+    enabled: true
+
+- name: Déployer un index.html personnalisé
+  copy:
+    src: index.html
+    dest: /var/www/html/index.html
+    owner: www-data
+    group: www-data
+    mode: '0644'
